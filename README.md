@@ -1,95 +1,116 @@
-# Итоговый совместный проект по теме API.
-# Проект YaMDb
-Бэкенд для работы с произведениям, отзывами и комментариями. 
-Реализовано согласно ТЗ в формате redoc. Доступно после запуска проекта:
-http://localhost:8000/redoc/
+# Запуск docker-compose. Проект YaMDb
 
-## Технологии
-* Python 3.7
-* Django 2.2.19
-* Nginx
-* Docker-comprose
-* DRF
+[![Python](https://img.shields.io/badge/-Python-464641?style=flat-square&logo=Python)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/-Django-464646?style=flat-square&logo=Django)](https://www.djangoproject.com/)
+[![HTML5](https://img.shields.io/badge/-HTML5-464646?style=flat-square&logo=html5)](https://en.wikipedia.org/wiki/HTML5)
+[![CSS](https://img.shields.io/badge/-CSS-464646?style=flat-square&logo=css3)](https://en.wikipedia.org/wiki/CSS)
+[![Docker](https://img.shields.io/badge/Docker-464646?style=flat-square&logo=docker)](https://www.docker.com/)
+[![Pytest](https://img.shields.io/badge/-Pytest-464646?style=flat-square&logo=pytest)](https://docs.pytest.org/en/6.2.x/)
 
-## Как запустить проект:
+Яндекс Практикум. Проект 15-го спринта: запуск docker-compose.
 
-Клонировать репозиторий и перейти в него в командной строке:
+## Описание
 
-```
-git clone git@github.com:Ramiras123/api_yamdb.git
-```
+Проект `YaMDb` собирает отзывы пользователей на произведения из категорий: «Книги», «Фильмы», «Музыка».
 
-```
-cd api_yamdb/
-```
+## Функционал
 
-Cоздать и активировать виртуальное окружение:
+- Произведения делятся на категории. Список категорий может быть расширен администратором;
+- Произведения, фильмы и музыка не хранятся в приложении;
+- В каждой категории есть произведения: книги, фильмы или музыка;
+- Произведению может быть присвоен жанр из списка предустановленных. Новые жанры может создавать только администратор;
+- Пользователи могут оставлять отзывы и ставить оценку произведениям. Из пользовательских оценок формируется рейтинг. На одно произведение можно оставить только один отзыв.
 
-```
-python3 -m venv env
-```
+## Установка
 
-```
-source env/bin/activate
-```
+1. Проверить наличие Docker
 
-Установить зависимости из файла requirements.txt:
+   Прежде чем приступать к работе, убедиться что Docker установлен, для этого ввести команду:
 
-```
-python3 -m pip install --upgrade pip
-```
+   ```bash
+   docker -v
+   ```
 
-```
-pip install -r requirements.txt
-```
-Перейти в папку infra и выпролнить команду
+   В случае отсутствия, скачать [Docker Desktop](https://www.docker.com/products/docker-desktop) для Mac или Windows. [Docker Compose](https://docs.docker.com/compose) будет установлен автоматически.
 
-```
-docker-compose up
-```
+   В Linux проверить, что установлена последняя версия [Compose](https://docs.docker.com/compose/install/).
 
-Выполнить миграции:
+   Также можно воспользоваться официальной [инструкцией](https://docs.docker.com/engine/install/).
 
-```
-docker-compose exec web python manage.py migrate
-```
+2. Клонировать репозиторий на локальный компьютер
 
-Создать суперпользователя:
+   ```bash
+   git clone https://github.com/Ramiras123/infra_sp2.git
+   ```
 
-```
-docker-compose exec web python manage.py createsuperuser
-```
+3. В корневой директории создать файл `.env`, согласно примеру:
 
-Сбор статических файлов:
+   ```bash
+   DB_ENGINE=django.db.backends.postgresql
+   DB_NAME=postgres
+   POSTGRES_USER=postgres
+   POSTGRES_PASSWORD=postgres
+   DB_HOST=db
+   DB_PORT=5432
+   ```
 
-```
-docker-compose exec web python manage.py collectstatic --no-input
-```
+4. Запустить `docker-compose`
 
-## Импорт данных 
+   Выполнить из корневой директории команду:
 
-Импорт данных из static/data:
-```
-docker-compose exec web python manage.py import_data
-```
+   ```bash
+   docker-compose up -d
+   ```
 
-Внимание, если при импорте возникают конфликты с ранее загруженными данными, то можно запустить скрипт с аругментов для предварительной очистки всех моделей:
-```
-docker-compose exec web python manage.py import_data --clear
-```
+5. Заполнить БД
 
-Правда, в этом случае и суперюзер будет удален, так что скорее всего придется сделать 
-```
-docker-compose exec web python manage.py createsuperuser
-```
-Суперюзером можно войти в админку и посмотреть заполненность данных.
+   Создать и выполнить миграции:
 
-Чтобы загрузить тестовые значения в базу данных перейдите в каталог проекта и скопируйте файл базы данных в контейнер приложения:
-```
-docker cp <DATA BASE> <CONTAINER ID>:/app/<DATA BASE>
-```
-Перейдите в контейнер приложения и загрузить данные в БД:
-```
-docker container exec -it <CONTAINER ID> bash
-python manage.py loaddata <DATA BASE>
-```
+   ```bash
+   docker-compose exec web python manage.py makemigrations --noinput
+   docker-compose exec web python manage.py migrate --noinput
+   ```
+
+6. Подгрузить статику
+
+   ```bash
+   docker-compose exec web python manage.py collectstatic --no-input
+   ```
+
+7. Заполнить БД тестовыми данными
+
+   Для заполнения базы использовать файл `fixtures.json`, в директории `infra_sp2`. Выполните команду:
+
+   ```bash
+   docker-compose exec web python manage.py loaddata fixtures.json
+   ```
+
+8. Создать суперпользователя
+
+   ```bash
+   docker-compose exec web python manage.py createsuperuser
+   ```
+
+9. Остановить работу всех контейнеров
+
+   ```bash
+   docker-compose down
+   ```
+
+10. Пересобрать и запустить контейнеры
+
+    ```bash
+    docker-compose up -d --build
+    ```
+
+11. Мониторинг запущенных контейнеров
+
+    ```bash
+    docker stats
+    ```
+
+12. Остановить и удалить контейнеры, тома и образы
+
+    ```bash
+    docker-compose down -v
+    ```
