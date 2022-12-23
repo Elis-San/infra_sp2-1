@@ -6,16 +6,9 @@ from users.models import User
 
 class UserSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ],
         required=True,
     )
-    email = serializers.EmailField(
-        validators=[
-            UniqueValidator(queryset=User.objects.all())
-        ]
-    )
+    email = serializers.EmailField()
 
     class Meta:
         fields = ('username', 'email', 'first_name',

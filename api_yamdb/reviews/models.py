@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
@@ -48,7 +50,8 @@ class Title(models.Model):
         max_length=settings.MID_INT_LENGTH
     )
     year = models.IntegerField(
-        verbose_name='Дата выхода'
+        verbose_name='Дата выхода',
+        validators=[MaxValueValidator(datetime.date.today().year)]
     )
     description = models.TextField(
         verbose_name='Описание',
